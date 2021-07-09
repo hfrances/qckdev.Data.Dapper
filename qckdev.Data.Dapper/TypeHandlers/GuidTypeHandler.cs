@@ -4,7 +4,7 @@ using System.Data;
 
 namespace qckdev.Data.Dapper.TypeHandler
 {
-    public class GuidTypeHandler : global::Dapper.SqlMapper.TypeHandler<Guid>
+    public class GuidTypeHandler : SqlMapper.TypeHandler<Guid>
     {
         public override void SetValue(IDbDataParameter parameter, Guid guid)
         {

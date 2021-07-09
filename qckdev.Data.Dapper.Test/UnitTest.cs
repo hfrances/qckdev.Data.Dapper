@@ -15,7 +15,7 @@ namespace qckdev.Data.Dapper.Test
         static UnitTest()
         {
             SqlMapper.AddTypeHandler(new TypeHandler.GuidTypeHandler());
-            SqlMapperMore.SetMapper<Entities.TestFake>();
+            SqlMapperHelper.SetMapper<Entities.TestFake>();
         }
 
 

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace qckdev.Data.Dapper
 {
-    public static class SqlMapperMore
+    public static class SqlMapperHelper
     {
 
         public static void SetMapper<T>()
