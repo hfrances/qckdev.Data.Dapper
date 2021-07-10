@@ -23,74 +23,70 @@ namespace qckdev.Data.Dapper.Test
         public void TestMethodSqlite()
         {
             const string connectionString = "Data Source=:memory:";
+            using var conn = new SqliteConnection(connectionString);
+            dynamic rdo;
 
-            using (var con = new SqliteConnection(connectionString))
-            {
-                dynamic rdo;
-
-                con.Open();
-                rdo = con.QueryFirst("select SQLITE_VERSION() AS Version");
-                Assert.IsNotNull(rdo);
-            }
+            conn.Open();
+            rdo = conn.QueryFirst("select SQLITE_VERSION() AS Version");
+            Assert.IsNotNull(rdo);
         }
 
         [TestMethod]
         public void TestMethodQuery()
         {
             const string connectionString = "Data Source=:memory:";
+            using var conn = new SqliteConnection(connectionString);
+            using var context = Extensions.CreateDbContext<TestDbContext>(
+                builder => builder.UseSqlite(conn)
+            );
+            bool created;
+            int rdo;
 
-            using (var conn = new SqliteConnection(connectionString))
+            context.Database.OpenConnection();
+
+            try
             {
-                using (var context = CreateDbContext<TestDbContext>(conn))
-                {
-                    bool created;
-                    int rdo;
+                var entities = new Entities.Test[] {
+                    new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 1" },
+                    new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 2" }
+                };
 
-                    context.Database.OpenConnection();
+                // Create schema.
+                created = context.Database.EnsureCreated();
+                Assert.IsTrue(created);
 
-                    try
-                    {
-                        var entities = new Entities.Test[] {
-                            new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 1" },
-                            new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 2" }
-                        };
+                // Initialize data.
+                context.Tests.AddRange(entities);
+                rdo = context.SaveChanges();
+                Assert.AreEqual(entities.Length, rdo);
 
-                        created = context.Database.EnsureCreated();
-                        Assert.IsTrue(created);
+                // Check if data is created properly.
+                var fromContext = context.Tests;
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromContext.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking if data has been created properly"
+                );
 
-                        context.Tests.AddRange(entities);
-                        rdo = context.SaveChanges();
-                        Assert.AreEqual(entities.Length, rdo);
+                // Check dapper functionality.
+                var fromDapper = conn.Query<Entities.Test>("SELECT * FROM Tests");
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromDapper.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking dapper functionality"
+                );
 
-                        // Check if data is created properly.
-                        var fromContext = context.Tests;
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromContext.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking if data has been created properly"
-                        );
-
-                        // Check dapper functionality.
-                        var fromDapper = conn.Query<Entities.Test>("SELECT * FROM Tests");
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromDapper.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking dapper functionality"
-                        );
-
-                        // Check dapper functionality with column mapping.
-                        var fromDapperFake = conn.Query<Entities.TestFake>("SELECT * FROM Tests");
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking daper functionality with column mapping"
-                        );
-                    }
-                    finally
-                    {
-                        context.Database.CloseConnection();
-                    }
-                }
+                // Check dapper functionality with column mapping.
+                var fromDapperFake = conn.Query<Entities.TestFake>("SELECT * FROM Tests");
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking daper functionality with column mapping"
+                );
+            }
+            finally
+            {
+                context.Database.CloseConnection();
             }
         }
 
@@ -98,69 +94,59 @@ namespace qckdev.Data.Dapper.Test
         public async Task TestMethodQueryAsync()
         {
             const string connectionString = "Data Source=:memory:";
+            using var conn = new SqliteConnection(connectionString);
+            using var context = Extensions.CreateDbContext<TestDbContext>(
+                builder => builder.UseSqlite(conn)
+            );
+            bool created;
+            int rdo;
 
-            using (var conn = new SqliteConnection(connectionString))
+            await context.Database.OpenConnectionAsync();
+
+            try
             {
-                using (var context = CreateDbContext<TestDbContext>(conn))
-                {
-                    bool created;
-                    int rdo;
+                var entities = new Entities.Test[] {
+                    new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 1" },
+                    new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 2" }
+                };
 
-                    await context.Database.OpenConnectionAsync();
+                // Create schema.
+                created = await context.Database.EnsureCreatedAsync();
+                Assert.IsTrue(created);
 
-                    try
-                    {
-                        var entities = new Entities.Test[] {
-                            new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 1" },
-                            new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 2" }
-                        };
+                // Initialize data.
+                await context.Tests.AddRangeAsync(entities);
+                rdo = await context.SaveChangesAsync();
+                Assert.AreEqual(entities.Length, rdo);
 
-                        created = await context.Database.EnsureCreatedAsync();
-                        Assert.IsTrue(created);
+                // Check if data is created properly.
+                var fromContext = await context.Tests.ToArrayAsync();
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromContext.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking if data has been created properly"
+                );
 
-                        await context.Tests.AddRangeAsync(entities);
-                        rdo = await context.SaveChangesAsync();
-                        Assert.AreEqual(entities.Length, rdo);
+                // Check dapper functionality.
+                var fromDapper = await conn.QueryAsync<Entities.Test>("SELECT * FROM Tests");
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromDapper.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking dapper functionality"
+                );
 
-                        // Check if data is created properly.
-                        var fromContext = await context.Tests.ToArrayAsync();
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromContext.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking if data has been created properly"
-                        );
-
-                        // Check dapper functionality.
-                        var fromDapper = await conn.QueryAsync<Entities.Test>("SELECT * FROM Tests");
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromDapper.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking dapper functionality"
-                        );
-
-                        // Check dapper functionality with column mapping.
-                        var fromDapperFake = await conn.QueryAsync<Entities.TestFake>("SELECT * FROM Tests");
-                        CollectionAssert.AreEqual(
-                            entities.Select(x => x.ToDynamic()).ToArray(),
-                            fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
-                            "Failed checking daper functionality with column mapping"
-                        );
-                    }
-                    finally
-                    {
-                        await context.Database.CloseConnectionAsync();
-                    }
-                }
+                // Check dapper functionality with column mapping.
+                var fromDapperFake = await conn.QueryAsync<Entities.TestFake>("SELECT * FROM Tests");
+                CollectionAssert.AreEqual(
+                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking daper functionality with column mapping"
+                );
             }
-        }
-
-
-        private static TDbContext CreateDbContext<TDbContext>(SqliteConnection connection) where TDbContext : DbContext
-        {
-            var builder = new DbContextOptionsBuilder<TDbContext>();
-            var options = builder.UseSqlite(connection).Options;
-
-            return (TDbContext)Activator.CreateInstance(typeof(TDbContext), options);
+            finally
+            {
+                await context.Database.CloseConnectionAsync();
+            }
         }
 
     }

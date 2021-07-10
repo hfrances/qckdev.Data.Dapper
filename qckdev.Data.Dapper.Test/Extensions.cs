@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
@@ -7,6 +9,14 @@ namespace qckdev.Data.Dapper.Test
 {
     static class Extensions
     {
+
+        public static TDbContext CreateDbContext<TDbContext>(Func<DbContextOptionsBuilder<TDbContext>, DbContextOptionsBuilder<TDbContext>> builder) where TDbContext : DbContext
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<TDbContext>();
+            var options = builder(optionsBuilder).Options;
+
+            return (TDbContext)Activator.CreateInstance(typeof(TDbContext), options);
+        }
 
         public static dynamic ToDynamic(this Entities.Test entity)
         {
@@ -26,17 +36,6 @@ namespace qckdev.Data.Dapper.Test
                 Name = entity.NameFake,
                 Factor = entity.FactorFake
             };
-        }
-
-        public static dynamic ToDynamic<T>(this T value)
-        {
-            IDictionary<string, object> expando = new ExpandoObject();
-
-            foreach (var property in TypeDescriptor.GetProperties(value.GetType()).OfType<PropertyDescriptor>())
-            {
-                expando.Add(property.Name, property.GetValue(value));
-            }
-            return expando as ExpandoObject;
         }
 
     }
