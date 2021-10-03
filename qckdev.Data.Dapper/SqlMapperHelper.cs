@@ -5,13 +5,28 @@ using System.Linq;
 
 namespace qckdev.Data.Dapper
 {
+
+    /// <summary>
+    /// Provides additional methos for Dapper mapping.
+    /// </summary>
     public static class SqlMapperHelper
     {
 
+        /// <summary>
+        ///  Set custom mapping for a specific type.
+        /// </summary>
+        /// <typeparam name="T">Entity type to map.</typeparam>
         public static void SetMapper<T>()
         {
-            var type = typeof(T);
+            SetMapper(typeof(T));
+        }
 
+        /// <summary>
+        ///  Set custom mapping for a specific type.
+        /// </summary>
+        /// <param name="type">Entity type to map.</param>
+        public static void SetMapper(Type type)
+        {
             DapperBase.SqlMapper.SetTypeMap(
                 type,
                 new DapperBase.CustomPropertyTypeMap(

@@ -12,6 +12,7 @@ namespace qckdev.Data.Dapper.Test.Entities
         public string NameFake { get; set; }
         [Column("Factor")]
         public int FactorFake { get; set; }
-
+        [Column("Spaced")]
+        public string SpacedFake { get; set; }
     }
 }

@@ -2,8 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.2.0-alpha.3</Version>
+    <Version>0.3.0-beta</Version>
+    <Authors>hfrances</Authors>
+    <Company>TrCode</Company>
+    <Product>qckdev.Data.Dapper (Preview)</Product>
+    <Description>Provides a default set of tools for Dapper library.</Description>
+    <PackageProjectUrl>https://github.com/hfrances/qckdev.Data.Dapper</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,8 @@
 
 # qckdev.Data.Dapper
 
+Provides a default set of tools for Dapper library.
+
 ```cs
 using System;
 using System.ComponentModel.DataAnnotations.Schema;

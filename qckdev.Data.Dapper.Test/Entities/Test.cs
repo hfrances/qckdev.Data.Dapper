@@ -10,6 +10,6 @@ namespace qckdev.Data.Dapper.Test.Entities
         public Guid TestId { get; set; }
         public string Name { get; set; }
         public int Factor { get; set; }
-
+        public string Spaced { get; set; }
     }
 }

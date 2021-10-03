@@ -9,18 +9,19 @@ using System.Threading.Tasks;
 namespace qckdev.Data.Dapper.Test
 {
     [TestClass]
-    public class UnitTest
+    public sealed class UnitTest
     {
 
         static UnitTest()
         {
-            SqlMapper.AddTypeHandler(new TypeHandler.GuidTypeHandler());
+            SqlMapper.AddTypeHandler(new TypeHandlers.GuidTypeHandler());
+            SqlMapper.AddTypeHandler(new TypeHandlers.TrimStringTypeHandler());
             SqlMapperHelper.SetMapper<Entities.TestFake>();
         }
 
 
         [TestMethod]
-        public void TestMethodSqlite()
+        public void TestMethodSqliteTest()
         {
             const string connectionString = "Data Source=:memory:";
             using var conn = new SqliteConnection(connectionString);
@@ -32,7 +33,7 @@ namespace qckdev.Data.Dapper.Test
         }
 
         [TestMethod]
-        public void TestMethodQuery()
+        public void TestMethodQueryTest()
         {
             const string connectionString = "Data Source=:memory:";
             using var conn = new SqliteConnection(connectionString);
@@ -91,7 +92,7 @@ namespace qckdev.Data.Dapper.Test
         }
 
         [TestMethod]
-        public async Task TestMethodQueryAsync()
+        public async Task TestMethodQueryTestAsync()
         {
             const string connectionString = "Data Source=:memory:";
             using var conn = new SqliteConnection(connectionString);
@@ -140,6 +141,58 @@ namespace qckdev.Data.Dapper.Test
                 CollectionAssert.AreEqual(
                     entities.Select(x => x.ToDynamic()).ToArray(),
                     fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
+                    "Failed checking daper functionality with column mapping"
+                );
+            }
+            finally
+            {
+                await context.Database.CloseConnectionAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task TrimEndStringTypeHandlerTestAsync()
+        {
+            const string connectionString = "Data Source=:memory:";
+            using var conn = new SqliteConnection(connectionString);
+            using var context = Extensions.CreateDbContext<TestDbContext>(
+                builder => builder.UseSqlite(conn)
+            );
+            bool created;
+            int rdo;
+
+            await context.Database.OpenConnectionAsync();
+
+            try
+            {
+                var entity = new Entities.Test { TestId = Guid.NewGuid(), Name = "Test 1", Spaced = "Value with spaces   " };
+
+                // Create schema.
+                created = await context.Database.EnsureCreatedAsync();
+                Assert.IsTrue(created);
+
+                // Initialize data.
+                await context.Tests.AddAsync(entity);
+                rdo = await context.SaveChangesAsync();
+                Assert.AreEqual(1, rdo);
+
+                // Check if data is created properly.
+                var fromContext = await context.Tests.SingleOrDefaultAsync();
+                Assert.AreEqual(entity, fromContext,
+                    "Failed checking if data has been created properly"
+                );
+
+                // Check dapper functionality.
+                var fromDapper = await conn.QuerySingleAsync<Entities.Test>("SELECT * FROM Tests WHERE TestId = @id", new { id = entity.TestId });
+                Assert.AreEqual(
+                    entity.Spaced.TrimEnd(), fromDapper.Spaced,
+                    "Failed checking dapper functionality"
+                );
+
+                // Check dapper functionality with column mapping.
+                var fromDapperFake = await conn.QuerySingleAsync<Entities.TestFake>("SELECT * FROM Tests WHERE TestID = @id", new { id = entity.TestId });
+                Assert.AreEqual(
+                    entity.Spaced.TrimEnd(), fromDapperFake.SpacedFake,
                     "Failed checking daper functionality with column mapping"
                 );
             }

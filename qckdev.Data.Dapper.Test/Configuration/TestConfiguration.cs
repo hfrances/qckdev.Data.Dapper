@@ -11,6 +11,7 @@ namespace qckdev.Data.Dapper.Test.Configuration
             builder.HasKey(x => x.TestId);
             builder.Property(x => x.Name).IsRequired();
             builder.Property(x => x.Factor).HasDefaultValue(1);
+            builder.Property(x => x.Spaced).HasMaxLength(20).IsFixedLength();
         }
     }
 }
