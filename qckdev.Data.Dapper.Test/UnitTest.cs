@@ -62,25 +62,25 @@ namespace qckdev.Data.Dapper.Test
                 Assert.AreEqual(entities.Length, rdo);
 
                 // Check if data is created properly.
-                var fromContext = context.Tests;
+                var fromContext = context.Tests.OrderBy(x => x.Name);
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromContext.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking if data has been created properly"
                 );
 
                 // Check dapper functionality.
-                var fromDapper = conn.Query<Entities.Test>("SELECT * FROM Tests");
+                var fromDapper = conn.Query<Entities.Test>("SELECT * FROM Tests ORDER BY Name");
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromDapper.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking dapper functionality"
                 );
 
                 // Check dapper functionality with column mapping.
-                var fromDapperFake = conn.Query<Entities.TestFake>("SELECT * FROM Tests");
+                var fromDapperFake = conn.Query<Entities.TestFake>("SELECT * FROM Tests ORDER BY Name");
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking daper functionality with column mapping"
                 );
@@ -121,25 +121,27 @@ namespace qckdev.Data.Dapper.Test
                 Assert.AreEqual(entities.Length, rdo);
 
                 // Check if data is created properly.
-                var fromContext = await context.Tests.ToArrayAsync();
+                var fromContext = await context.Tests
+                    .OrderBy(x => x.Name)
+                    .ToArrayAsync();
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromContext.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking if data has been created properly"
                 );
 
                 // Check dapper functionality.
-                var fromDapper = await conn.QueryAsync<Entities.Test>("SELECT * FROM Tests");
+                var fromDapper = await conn.QueryAsync<Entities.Test>("SELECT * FROM Tests ORDER BY Name");
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromDapper.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking dapper functionality"
                 );
 
                 // Check dapper functionality with column mapping.
-                var fromDapperFake = await conn.QueryAsync<Entities.TestFake>("SELECT * FROM Tests");
+                var fromDapperFake = await conn.QueryAsync<Entities.TestFake>("SELECT * FROM Tests ORDER BY Name");
                 CollectionAssert.AreEqual(
-                    entities.Select(x => x.ToDynamic()).ToArray(),
+                    entities.OrderBy(x => x.Name).Select(x => x.ToDynamic()).ToArray(),
                     fromDapperFake.Select(x => x.ToDynamic()).ToArray(),
                     "Failed checking daper functionality with column mapping"
                 );
