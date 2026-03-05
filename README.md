@@ -1,7 +1,7 @@
 [![NuGet Version](https://img.shields.io/nuget/v/qckdev.Data.Dapper.svg)](https://www.nuget.org/packages/qckdev.Data.Dapper)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=qckdev.Data.Dapper&metric=alert_status)](https://sonarcloud.io/dashboard?id=qckdev.Data.Dapper)
 [![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=qckdev.Data.Dapper&metric=coverage)](https://sonarcloud.io/dashboard?id=qckdev.Data.Dapper)
-![Azure Pipelines Status](https://hfrances.visualstudio.com/Main/_apis/build/status/qckdev.Data.Dapper?branchName=main)
+![Azure Pipelines Status](https://hfrances.visualstudio.com/Main/_apis/build/status/qckdev.Data.Dapper?branchName=master)
 
 # qckdev.Data.Dapper
 
