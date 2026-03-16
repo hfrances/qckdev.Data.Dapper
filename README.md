@@ -7,6 +7,14 @@
 
 Provides a default set of tools for Dapper library.
 
+## 🛠️ Installation
+
+```bash
+dotnet add package qckdev.Data.Dapper
+```
+
+## ⚡ Quick Start
+
 ```cs
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
